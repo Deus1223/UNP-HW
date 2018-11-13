@@ -82,16 +82,55 @@ int main()
 					client[i] = -1;
 				}
                 else {
-                    memset(buf, 0, 2048);
+					printf("New Client\n");
+					printf("%s\n", buf);
 
-                    strcpy(buf, "HTTP/1.0 200 OK\r\n");
-                    strcat(buf, "Content-Type:text/html\r\n\r\n");
-                    write(sockfd, buf, strlen(buf));
+					// forbit other requests
+					if (strncmp(buf, "GET ", 4) && strncmp(buf, "get ", 4)) {
+						perror("Received request other than GET\n");
+						exit(1);
+					}
+					
+					if (!strncmp(buf, "GET /unp-img.jpg", 16)) {	// request image
+						printf("Sending image...\n");
 
-                    int fp = open("web2.html", O_RDONLY);
-					int len;
-                    while( (len = read(fp, buf, 2047)) > 0 )
-                        write(sockfd, buf, len);
+						int fdImg, len;
+						if ( (fdImg = open("unp-img.jpg", O_RDONLY)) == -1 ) {
+							perror("Opening image failed.");
+							exit(1);
+						}
+
+                        char buff[2048] = "\0";
+						strcpy(buff, "HTTP/1.0 200 OK\r\n");
+						strcat(buff, "Content-Type:image/jpeg\r\n\r\n");
+						send(sockfd, buff, strlen(buff), 0);
+						
+						while( (len = read(fdImg, buff, 2047)) > 0 )
+							send(sockfd, buff, len, 0);
+						
+						printf("Successfully sent image.\n");
+						close(fdImg);
+					}
+					else {	// request html
+						printf("Sending html...\n");
+
+						int fdWeb, len;
+						if ( (fdWeb = open("web2.html", O_RDONLY)) == -1 ) {
+							perror("Opening html failed.");
+							exit(1);
+						}
+
+                        char buff[2048] = "\0";
+						strcpy(buff, "HTTP/1.0 200 OK\r\n");
+						strcat(buff, "Content-Type:text/html\r\n\r\n");
+						send(sockfd, buff, strlen(buff), 0);
+
+						while( (len = read(fdWeb, buff, 2047)) > 0 )
+							send(sockfd, buff, len, 0);
+
+						printf("Successfully sent html\n");
+						close(fdWeb);
+					}
 
 					close(sockfd);
 					FD_CLR(sockfd, &allset);

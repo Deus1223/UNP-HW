@@ -295,7 +295,7 @@ void *clientHandler(Client *client)
                 {
                     if(i != client->index)
                     {
-                        sprintf(sendMsg, "Message from %s: ", ptr);
+                        sprintf(sendMsg, "Message from %s: ", client->userName);
 
                         while(*ptr!='\0') ptr++;
                         ptr++;
@@ -410,7 +410,9 @@ void *clientHandler(Client *client)
                     write(clientFileFd, msgBuffer, nbytes);
                 }
 
-                shutdown(clientFileFd, SHUT_WR);
+                fclose(fp);
+                close(clientFileFd);
+                close(listenFileFd);
                 /* End connection for file download */
             }
 

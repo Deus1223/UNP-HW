@@ -169,7 +169,9 @@ int main(int argc, char *argv[])
                     while( nbytes = read(socketFileFd, recvMsg, MAX_BUFFER) )
                         fwrite(recvMsg, sizeof(char), nbytes, fp);
 
+                    fclose(fp);
                     close(socketFileFd);
+                    printf("Download success.\n");
                     /* End Connection for download */
                 }
                 else
